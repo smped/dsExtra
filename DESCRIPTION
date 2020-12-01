@@ -14,15 +14,20 @@ Encoding: UTF-8
 Depends:
     R (>= 4.0.0),
     ggplot2,
-    rlang,
     tibble (>= 1.3.1)
 Imports:
     cowplot,
     dplyr (>= 1.0.0),
     forcats,
     grDevices,
+    magrittr,
+    mixOmics,
+    RColorBrewer,
+    rlang,
     stringr,
-    tidyr
+    tidyr,
+    tidyselect (>= 1.1.0),
+    zoo
 LazyData: true
 RoxygenNote: 7.1.1
 Suggests: 
