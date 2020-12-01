@@ -23,13 +23,16 @@
 #' @param size The point size when plotting the training compounds
 #'
 #' @import mixOmics
+#' @import rlang
+#' @import tibble
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom grDevices hcl.colors
 #' @importFrom tidyselect any_of all_of
 #' @importFrom dplyr select bind_rows mutate filter
 #' @importFrom magrittr `%>%`
+#' @importFrom methods is
+#' @importFrom stats setNames predict
 #' @importFrom zoo na.locf
-#' @import tibble
 #'
 #' @export
 plotTestCompounds <- function(
@@ -86,7 +89,7 @@ plotTestCompounds <- function(
   refPoints <- droplevels(refPoints)
 
   ## Fit the new compounds
-  ind <- which(df[[column]] %in% compound)
+  ind <- which(data[[column]] %in% compound)
   test_df <- data[ind,]
   test_pred <- predict(fit, dplyr::select(test_df, any_of(param)))
   testPoints <- dplyr::select(test_df, -any_of(param))
@@ -100,19 +103,24 @@ plotTestCompounds <- function(
     dplyr::select(
       all_of(c(column, "comp1", "comp2", "Concentration_Index"))
     ) %>%
-    split(f = .[[column]]) %>%
+    split(f = testPoints[[column]]) %>%
     lapply(function(x){
-      x$plotGroup <- x[[column]]
+      x[["plotGroup"]] <- x[[column]]
       x <- bind_rows(x, refPoints)
       x
     }) %>%
     bind_rows() %>%
-    as_tibble() %>%
-    mutate(plotGroup = zoo::na.locf(plotGroup))
+    as_tibble()
+  allPred[["plotGroup"]] <- zoo::na.locf(allPred[["plotGroup"]])
+
+  x <- sym("comp1")
+  y <- sym("comp2")
+  lab <- sym("Concentration_Index")
+  plotGroup <- c() # Avoids an R CMD Check error
 
   ## Plot each set of training points first, then add the test points
   allPred[allPred[[column]] %in% refs,] %>%
-    ggplot(aes(comp1, comp2)) +
+    ggplot(aes(!!x, !!y)) +
     geom_point(
       aes_string(shape = column, colour = column),
       size = size
@@ -123,8 +131,8 @@ plotTestCompounds <- function(
     ) +
     ## The test points as labels
     geom_label(
-      aes(label = Concentration_Index),
-      data = dplyr::filter(allPred, !Label %in% refs),
+      aes(label = !!lab),
+      data = dplyr::filter(allPred, !allPred[[column]] %in% refs),
       colour = "black",
       alpha = 0.5,
       show.legend = FALSE
