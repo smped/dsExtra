@@ -8,6 +8,13 @@ Description: This package contains a handful of additional functions required
     for analysis of drug screens.
     These are assumed to be as performed in the Dame Roma Mitchell Cancer
     Research Laboratories, University of Adelaide.
+URL: https://github.com/steveped/dsExtra/issues
 License: GPL-3
 Encoding: UTF-8
+Depends:
+    R (>= 4.0.0),
+    tibble (>= 1.3.1)
 LazyData: true
+RoxygenNote: 7.1.1
+Suggests: 
+    testthat
