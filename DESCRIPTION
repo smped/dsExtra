@@ -1,0 +1,13 @@
+Package: dsExtra
+Version: 0.1.0
+Date: 2020/12/01
+Title: Extra functions for Drug Screen Analysis
+Authors@R: person("Steve", "Pederson", 
+        email = "stephen.pederson.au@gmail.com", role = c("aut", "cre"))
+Description: This package contains a handful of additional functions required
+    for analysis of drug screens.
+    These are assumed to be as performed in the Dame Roma Mitchell Cancer
+    Research Laboratories, University of Adelaide.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
