@@ -16,7 +16,7 @@ if (!biocInstalled) install.packages("BiocManager")
 
 An advantage of the `BiocManager` package is that it allows for easy package
 installation from [CRAN](https://cran.r-project.org/), 
-[Bioconductor](https://bioconductor.org/) or [github](https://github.com/)
+[Bioconductor](https://bioconductor.org/) or [github](https://github.com/).
 Once installed, simply use the following code to install this package:
 
 ```
