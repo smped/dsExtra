@@ -21,6 +21,9 @@
 #' @param pal The colour palette for plotting the training compounds
 #' @param shapes The shapes to use when plotting the training compounds
 #' @param size The point size when plotting the training compounds
+#' @param lab_col Text colour for plotted labels
+#' @param lab_bg Background colour for plotted labels
+#' @param lab_alpha Transparency for the label background
 #'
 #' @import mixOmics
 #' @import rlang
@@ -31,12 +34,13 @@
 #' @importFrom dplyr select bind_rows mutate filter
 #' @importFrom magrittr `%>%`
 #' @importFrom methods is
-#' @importFrom stats setNames predict
+#' @importFrom stats predict as.formula
 #' @importFrom zoo na.locf
 #'
 #' @export
 plotTestCompounds <- function(
-  compound, fit, data, column = "Label", pal, shapes, size = 3
+  compound, fit, data, column = "Label", pal, shapes, size = 3,
+  lab_col = "black", lab_bg = "white", lab_alpha = 0.5
 ){
 
   # Check the input data
@@ -47,7 +51,8 @@ plotTestCompounds <- function(
     paste0("Requested compound(s) not found in the column '", column, "':\n"),
     paste(setdiff(compound, data[[column]]), sep = ", ")
   )
-  stopifnot("Concentration_Index" %in% colnames(data))
+  concInd <- "Concentration_Index"
+  stopifnot(concInd %in% colnames(data))
 
   # Check the fitted model & the supplied data
   stopifnot(is(fit, "mixo_spls"))
@@ -84,7 +89,7 @@ plotTestCompounds <- function(
   )
 
   ## Extract the x & Y co-ordinates from the training dataset
-  refPoints <- setNames(tibble(fit$Y), column)
+  refPoints <- tibble(!!column := fit$Y)
   refPoints <- cbind(refPoints, fit$variates$X)
   refPoints <- droplevels(refPoints)
 
@@ -99,9 +104,11 @@ plotTestCompounds <- function(
 
   ## Now split each compound, add the training points,
   ## define plotGroups & merge
+  x <- sym("comp1")
+  y <- sym("comp2")
   allPred <- testPoints %>%
     dplyr::select(
-      all_of(c(column, "comp1", "comp2", "Concentration_Index"))
+      all_of(c(column, as_string(x), as_string(y), concInd))
     ) %>%
     split(f = testPoints[[column]]) %>%
     lapply(function(x){
@@ -113,28 +120,30 @@ plotTestCompounds <- function(
     as_tibble()
   allPred[["plotGroup"]] <- zoo::na.locf(allPred[["plotGroup"]])
 
-  x <- sym("comp1")
-  y <- sym("comp2")
-  lab <- sym("Concentration_Index")
-  plotGroup <- c() # Avoids an R CMD Check error
+  ## The Facetting formula
+  fm <- as.formula("~plotGroup")
+  ## The column as a symbol for parsing with rlang
+  colassym <- sym(column)
 
   ## Plot each set of training points first, then add the test points
-  allPred[allPred[[column]] %in% refs,] %>%
+  allPred %>%
+    dplyr::filter(!!colassym %in% refs) %>%
     ggplot(aes(!!x, !!y)) +
     geom_point(
-      aes_string(shape = column, colour = column),
+      aes(shape = !!colassym, colour = !!colassym),
       size = size
     ) +
     stat_ellipse(
-      aes_string(colour = column),
+      aes(colour = !!colassym),
       size = 1, show.legend = FALSE
     ) +
     ## The test points as labels
     geom_label(
-      aes(label = !!lab),
-      data = dplyr::filter(allPred, !allPred[[column]] %in% refs),
-      colour = "black",
-      alpha = 0.5,
+      aes(label = !!sym(concInd)),
+      data = dplyr::filter(allPred, !(!!colassym %in% refs)),
+      colour = lab_col,
+      alpha = lab_alpha,
+      fill = lab_bg,
       show.legend = FALSE
     ) +
     labs(
@@ -143,7 +152,7 @@ plotTestCompounds <- function(
       colour = "Compound",
       shape = "Compound"
     ) +
-    facet_wrap(~plotGroup) +
+    facet_wrap(fm) +
     scale_colour_manual(values = pal) +
     scale_shape_manual(values = shapes)
 
