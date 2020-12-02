@@ -4,7 +4,18 @@
 \alias{plotTestCompounds}
 \title{Plot Test Compounds}
 \usage{
-plotTestCompounds(compound, fit, data, column = "Label", pal, shapes, size = 3)
+plotTestCompounds(
+  compound,
+  fit,
+  data,
+  column = "Label",
+  pal,
+  shapes,
+  size = 3,
+  lab_col = "black",
+  lab_bg = "white",
+  lab_alpha = 0.5
+)
 }
 \arguments{
 \item{compound}{Character vector of compounds to be plotted}
@@ -22,6 +33,12 @@ but training compounds are optional}
 \item{shapes}{The shapes to use when plotting the training compounds}
 
 \item{size}{The point size when plotting the training compounds}
+
+\item{lab_col}{Text colour for plotted labels}
+
+\item{lab_bg}{Background colour for plotted labels}
+
+\item{lab_alpha}{Transparency for the label background}
 }
 \value{
 Produces a facetted ggplot object, with each test compound in an individual
